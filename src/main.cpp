@@ -15,11 +15,6 @@ const char* MQTT_TOPIC  = "muhayara/example";  // + "/0" s/d "/7"
 const int ledPins[8] = {13, 14, 18, 19, 21, 22, 23, 25};
 bool      ledStatus[8] = {false};
 
-// ── Pin LED RGB (indikator status) ──
-const int RGB_R = 26;  // Merah  = booting
-const int RGB_G = 27;  // Hijau  = WiFi OK
-const int RGB_B = 32;  // Biru   = MQTT OK
-
 WebServer   server(80);
 Preferences prefs;
 WiFiClient  espClient;
@@ -28,18 +23,6 @@ MQTTClient  mqttClient;
 String savedSSID="", savedPass="", pendingSSID="", pendingPass="";
 bool   wifiConnected=false, pendingConnect=false;
 bool   scanReady=false, scanRunning=false;
-
-// RGB HELPER
-void rgbSet(bool r, bool g, bool b) {
-  digitalWrite(RGB_R, r ? HIGH : LOW);
-  digitalWrite(RGB_G, g ? HIGH : LOW);
-  digitalWrite(RGB_B, b ? HIGH : LOW);
-}
-void rgbMerah()  { rgbSet(1, 0, 0); }
-void rgbHijau()  { rgbSet(0, 1, 0); }
-void rgbBiru()   { rgbSet(0, 0, 1); }
-void rgbKuning() { rgbSet(1, 1, 0); }
-void rgbMati()   { rgbSet(0, 0, 0); }
 
 // MQTT
 void onMessage(String &topic, String &payload) {
@@ -70,7 +53,7 @@ void reconnectMQTT() {
         mqttClient.publish(String(MQTT_TOPIC) + "/" + String(i), "0", false, 0);
         digitalWrite(ledPins[i], HIGH);  // ACTIVE LOW: HIGH = relay OFF
       }
-      rgbBiru();
+
       Serial.println("OK! Subscribe + clear all CH: " + String(MQTT_TOPIC) + "/0~7");
     } else {
       Serial.println("Gagal.");
@@ -165,7 +148,7 @@ String buildPage(String alertClass="", String alertMsg="") {
   String h = "<!DOCTYPE html><html lang='id'><head>";
   h += "<meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'>";
   h += "<title>Angklung Robot</title><style>"; h += CSS; h += "</style></head><body>";
-  h += "<h1>ANGKLUNG ROBOT</h1><p class='sub'>TEST MODE &#127981; LED Breadboard</p>";
+  h += "<h1>ANGKLUNG ROBOT</h1><p class='sub'>Remote Controller</p>";
   if (alertClass!="") h += "<div class='"+alertClass+"'>"+alertMsg+"</div>";
 
   h += "<div class='card'><div class='card-label'>Status Koneksi</div>";
@@ -177,12 +160,12 @@ String buildPage(String alertClass="", String alertMsg="") {
   // Tabel pin
   const char* noteNames[] = {"Do","Re","Mi","Fa","Sol","La","Si","Do'"};
   int pins[] = {16,17,18,19,23,25,26,27};
-  h += "<div class='card'><div class='card-label'>&#128161; Pin LED Nada</div>";
+  h += "<div class='card'><div class='card-label'>&#128161; Pin Relay Motor</div>";
   h += "<table class='pin-table'>";
   for (int i=0;i<8;i++)
     h += "<tr><td>CH"+String(i)+"</td><td>GPIO "+String(pins[i])+"</td><td style='color:#555'>"+noteNames[i]+"</td></tr>";
   h += "</table>";
-  h += "<p style='font-size:11px;color:#444;margin-top:10px'>RGB: <b style='color:#ff4444'>R=4</b> &nbsp; <b style='color:#00c864'>G=2</b> &nbsp; <b style='color:#4488ff'>B=32</b></p>";
+
   h += "</div>";
 
   h += "<div class='section-label'>Jaringan WiFi</div>";
@@ -272,7 +255,7 @@ void setup() {
   Serial.println(" Angklung Robot — TEST MODE");
   Serial.println("============================");
   Serial.println(" RELAY CH0 : GPIO 13 → Motor DC JGA25-370");
-  Serial.println(" RGB       : R=26  G=27  B=32");
+
   Serial.println("============================");
   Serial.println(" ACTIVE LOW relay: LOW=ON, HIGH=OFF");
 
@@ -283,11 +266,11 @@ void setup() {
     digitalWrite(ledPins[i], LOW);
   }
 
-  // Init RGB
-  pinMode(RGB_R, OUTPUT);
-  pinMode(RGB_G, OUTPUT);
-  pinMode(RGB_B, OUTPUT);
-  rgbMerah();
+
+  
+  
+  
+
 
   // ── TEST BOOT: hanya CH0 (active-low relay) ──
   Serial.println("[BOOT TEST] Relay CH0 ON → Motor jalan...");
@@ -318,12 +301,12 @@ void setup() {
   server.begin();
 
   if (loadSavedWifi()) {
-    wifiConnected=true; rgbHijau();
+    wifiConnected=true; 
     mqttClient.begin(MQTT_SERVER, espClient);
     mqttClient.onMessage(onMessage);
     Serial.println("[OK] Siap! Tekan nada di web controller.");
   } else {
-    rgbMerah();
+
     Serial.println("[INFO] Konek ke WiFi Angklung-Robot → buka 192.168.4.1");
   }
 }
@@ -338,18 +321,18 @@ void loop() {
   }
 
   if (pendingConnect) {
-    pendingConnect=false; rgbKuning();
+    pendingConnect=false; 
     Serial.println("[WiFi] Konek ke: "+pendingSSID);
     WiFi.begin(pendingSSID.c_str(), pendingPass.c_str());
     for (int i=0;i<20&&WiFi.status()!=WL_CONNECTED;i++){delay(500);Serial.print(".");server.handleClient();}
     if (WiFi.status()==WL_CONNECTED){
-      wifiConnected=true; rgbHijau();
+      wifiConnected=true; 
       Serial.println("\n[WiFi] OK: "+WiFi.localIP().toString());
       mqttClient.begin(MQTT_SERVER, espClient);
       mqttClient.onMessage(onMessage);
       Serial.println("[OK] Siap!");
     } else {
-      rgbMerah();
+
       Serial.println("\n[WiFi] Gagal!");
       prefs.begin("wifi",false); prefs.clear(); prefs.end();
       savedSSID=""; savedPass=""; pendingSSID="";
@@ -357,16 +340,8 @@ void loop() {
   }
 
   if (wifiConnected) {
-    if (!mqttClient.connected()){rgbHijau(); reconnectMQTT();}
-    else rgbBiru();
+    if (!mqttClient.connected()){ reconnectMQTT();}
+
     mqttClient.loop();
-  } else {
-    static unsigned long lastBlink=0;
-    if (millis()-lastBlink>800){
-      lastBlink=millis();
-      static bool state=false;
-      state=!state;
-      state ? rgbMerah() : rgbMati();
-    }
   }
 }
