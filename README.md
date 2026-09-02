@@ -30,7 +30,7 @@ Proyek ini dibangun menggunakan **PlatformIO**.
 1. Pastikan Anda sudah menginstal [VSCode](https://code.visualstudio.com/) dan ekstensi **PlatformIO**.
 2. *Clone* repositori ini:
    ```bash
-   git clone https://github.com/USERNAME_ANDA/angklung-esp32.git
+   git clone https://github.com/Muhayara/angklung-esp32.git
    ```
 3. Buka folder proyek di VSCode. PlatformIO akan otomatis mengunduh library yang dibutuhkan (didefinisikan di `platformio.ini`).
 4. Klik tombol **Build** (Tanda centang) dan **Upload** (Tanda panah ke kanan) di bagian bawah editor.
